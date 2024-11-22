@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shooting Game</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: #222;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Canvas size
+    canvas.width = 800;
+    canvas.height = 600;
+
+    // Game variables
+    const player = {
+      x: canvas.width / 2 - 25,
+      y: canvas.height - 60,
+      width: 50,
+      height: 50,
+      color: 'blue',
+      speed: 7,
+    };
+
+    const bullets = [];
+    const enemies = [];
+    let score = 0;
+
+    // Enemy generation
+    function spawnEnemy() {
+      const enemy = {
+        x: Math.random() * (canvas.width - 40),
+        y: -50,
+        width: 40,
+        height: 40,
+        color: 'red',
+        speed: 2 + Math.random() * 2,
+      };
+      enemies.push(enemy);
+    }
+
+    // Draw player
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    // Draw bullets
+    function drawBullets() {
+      bullets.forEach((bullet, index) => {
+        bullet.y -= bullet.speed;
+        ctx.fillStyle = bullet.color;
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+
+        // Remove off-screen bullets
+        if (bullet.y < 0) {
+          bullets.splice(index, 1);
+        }
+      });
+    }
+
+    // Draw enemies
+    function drawEnemies() {
+      enemies.forEach((enemy, index) => {
+        enemy.y += enemy.speed;
+        ctx.fillStyle = enemy.color;
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+
+        // Remove off-screen enemies
+        if (enemy.y > canvas.height) {
+          enemies.splice(index, 1);
+        }
+      });
+    }
+
+    // Check for collisions
+    function checkCollisions() {
+      enemies.forEach((enemy, enemyIndex) => {
+        bullets.forEach((bullet, bulletIndex) => {
+          if (
+            bullet.x < enemy.x + enemy.width &&
+            bullet.x + bullet.width > enemy.x &&
+            bullet.y < enemy.y + enemy.height &&
+            bullet.y + bullet.height > enemy.y
+          ) {
+            // Remove enemy and bullet
+            enemies.splice(enemyIndex, 1);
+            bullets.splice(bulletIndex, 1);
+            score++;
+          }
+        });
+
+        // Check if enemy hits player
+        if (
+          player.x < enemy.x + enemy.width &&
+          player.x + player.width > enemy.x &&
+          player.y < enemy.y + enemy.height &&
+          player.y + player.height > enemy.y
+        ) {
+          alert(`Game Over! Your score: ${score}`);
+          document.location.reload();
+        }
+      });
+    }
